@@ -20,51 +20,53 @@ jobs:
             REPO=${FULL_REPO#*/}
             echo "REPO_NAME=$REPO" >> $GITHUB_ENV
 
+
+
+      - name: Set Quality Gate
+        run: |
+          GATE_NAME=$REPO_NAME
+          
+          # Verificar si el Quality Gate ya existe
+          GATE_EXISTS=$(curl -s -u ${{ secrets.SONAR_TOKEN }}: \
+            "${{ secrets.SONAR_HOST_URL }}/api/qualitygates/show?name=$GATE_NAME" | grep -c "\"name\":\"$GATE_NAME\"")
+          
+          if [ "$GATE_EXISTS" -eq 0 ]; then
+            echo "El Quality Gate '$GATE_NAME' no existe. Creándolo..."
+            
+            # Crear el Gate
+            curl -s -u ${{ secrets.SONAR_TOKEN }}: -X POST \
+              "${{ secrets.SONAR_HOST_URL }}/api/qualitygates/create" \
+              -d "name=$GATE_NAME"
+              
+            # Añadir condiciones (90% coverage y 5% duplicación)
+            curl -s -u ${{ secrets.SONAR_TOKEN }}: -X POST \
+              "${{ secrets.SONAR_HOST_URL }}/api/qualitygates/create_condition" \
+              -d "gateName=$GATE_NAME" \
+              -d "metric=coverage" \
+              -d "op=LT" \
+              -d "error=90"
+              
+            curl -s -u ${{ secrets.SONAR_TOKEN }}: -X POST \
+              "${{ secrets.SONAR_HOST_URL }}/api/qualitygates/create_condition" \
+              -d "gateName=$GATE_NAME" \
+              -d "metric=duplicated_lines_density" \
+              -d "op=GT" \
+              -d "error=5"
+              
+            echo "Quality Gate '$GATE_NAME' creado con éxito."
+          else
+            echo "El Quality Gate '$GATE_NAME' ya existe. Saltando creación."
+          fi
+
       - name: debug
         run: |
             echo "REPO_NAME: $REPO_NAME"
-
-    #   - name: Set Quality Gate
-    #     run: |
-    #       GATE_NAME="Reglas-Amate"
-          
-    #       # Verificar si el Quality Gate ya existe
-    #       GATE_EXISTS=$(curl -s -u ${{ secrets.SONAR_TOKEN }}: \
-    #         "${{ secrets.SONAR_HOST_URL }}/api/qualitygates/show?name=$GATE_NAME" | grep -c "\"name\":\"$GATE_NAME\"")
-          
-    #       if [ "$GATE_EXISTS" -eq 0 ]; then
-    #         echo "El Quality Gate '$GATE_NAME' no existe. Creándolo..."
-            
-    #         # Crear el Gate
-    #         curl -s -u ${{ secrets.SONAR_TOKEN }}: -X POST \
-    #           "${{ secrets.SONAR_HOST_URL }}/api/qualitygates/create" \
-    #           -d "name=$GATE_NAME"
-              
-    #         # Añadir condiciones (90% coverage y 5% duplicación)
-    #         curl -s -u ${{ secrets.SONAR_TOKEN }}: -X POST \
-    #           "${{ secrets.SONAR_HOST_URL }}/api/qualitygates/create_condition" \
-    #           -d "gateName=$GATE_NAME" \
-    #           -d "metric=coverage" \
-    #           -d "op=LT" \
-    #           -d "error=90"
-              
-    #         curl -s -u ${{ secrets.SONAR_TOKEN }}: -X POST \
-    #           "${{ secrets.SONAR_HOST_URL }}/api/qualitygates/create_condition" \
-    #           -d "gateName=$GATE_NAME" \
-    #           -d "metric=duplicated_lines_density" \
-    #           -d "op=GT" \
-    #           -d "error=5"
-              
-    #         echo "Quality Gate '$GATE_NAME' creado con éxito."
-    #       else
-    #         echo "El Quality Gate '$GATE_NAME' ya existe. Saltando creación."
-    #       fi
-
+    
     #   # 1. PROVISION: Verificar si existe o crear el proyecto
     #   - name: Ensure SonarQube Project Exists
     #     run: |
     #       PROJECT_KEY="mi-proyecto-amate"
-    #       PROJECT_NAME="Amate Markdown Compiler"
+    #       PROJECT_NAME="$REPO_NAME"
           
     #       # Intentamos buscar el proyecto
     #       STATUS_CODE=$(curl -s -o /dev/null -w "%{http_code}" -u ${{ secrets.SONAR_TOKEN }}: \
