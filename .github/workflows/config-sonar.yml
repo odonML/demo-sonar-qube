@@ -47,7 +47,7 @@ jobs:
             # Crear el Gate
             curl -s -u ${{ secrets.SONAR_TOKEN }}: -X POST \
               "${{ secrets.SONAR_HOST_URL }}/api/qualitygates/create" \
-              -d "name=$GATE_NAME"
+              -d "name=$GATE_NAME" \
               -d "organization=$SONAR_ORGANIZATION"
               
             # Añadir condiciones (90% coverage y 5% duplicación)
