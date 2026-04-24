@@ -1,0 +1,107 @@
+name: config sonar
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+            fetch-depth: 0
+      - name: Get Repository name
+        id: get_repo_name
+        run: |
+            FULL_REPO=${GITHUB_REPOSITORY}
+            REPO=${FULL_REPO#*/}
+            echo "REPO_NAME=$REPO" >> $GITHUB_ENV
+
+      - name: debug
+        run: |
+            echo "REPO_NAME: $REPO_NAME"
+
+    #   - name: Set Quality Gate
+    #     run: |
+    #       GATE_NAME="Reglas-Amate"
+          
+    #       # Verificar si el Quality Gate ya existe
+    #       GATE_EXISTS=$(curl -s -u ${{ secrets.SONAR_TOKEN }}: \
+    #         "${{ secrets.SONAR_HOST_URL }}/api/qualitygates/show?name=$GATE_NAME" | grep -c "\"name\":\"$GATE_NAME\"")
+          
+    #       if [ "$GATE_EXISTS" -eq 0 ]; then
+    #         echo "El Quality Gate '$GATE_NAME' no existe. Creándolo..."
+            
+    #         # Crear el Gate
+    #         curl -s -u ${{ secrets.SONAR_TOKEN }}: -X POST \
+    #           "${{ secrets.SONAR_HOST_URL }}/api/qualitygates/create" \
+    #           -d "name=$GATE_NAME"
+              
+    #         # Añadir condiciones (90% coverage y 5% duplicación)
+    #         curl -s -u ${{ secrets.SONAR_TOKEN }}: -X POST \
+    #           "${{ secrets.SONAR_HOST_URL }}/api/qualitygates/create_condition" \
+    #           -d "gateName=$GATE_NAME" \
+    #           -d "metric=coverage" \
+    #           -d "op=LT" \
+    #           -d "error=90"
+              
+    #         curl -s -u ${{ secrets.SONAR_TOKEN }}: -X POST \
+    #           "${{ secrets.SONAR_HOST_URL }}/api/qualitygates/create_condition" \
+    #           -d "gateName=$GATE_NAME" \
+    #           -d "metric=duplicated_lines_density" \
+    #           -d "op=GT" \
+    #           -d "error=5"
+              
+    #         echo "Quality Gate '$GATE_NAME' creado con éxito."
+    #       else
+    #         echo "El Quality Gate '$GATE_NAME' ya existe. Saltando creación."
+    #       fi
+
+    #   # 1. PROVISION: Verificar si existe o crear el proyecto
+    #   - name: Ensure SonarQube Project Exists
+    #     run: |
+    #       PROJECT_KEY="mi-proyecto-amate"
+    #       PROJECT_NAME="Amate Markdown Compiler"
+          
+    #       # Intentamos buscar el proyecto
+    #       STATUS_CODE=$(curl -s -o /dev/null -w "%{http_code}" -u ${{ secrets.SONAR_TOKEN }}: \
+    #         "${{ secrets.SONAR_HOST_URL }}/api/projects/search?projects=$PROJECT_KEY")
+          
+    #       if [ "$STATUS_CODE" -ne 200 ]; then
+    #         echo "Proyecto no encontrado, creando..."
+    #         curl -u ${{ secrets.SONAR_TOKEN }}: -X POST \
+    #           "${{ secrets.SONAR_HOST_URL }}/api/projects/create" \
+    #           -d "name=$PROJECT_NAME" \
+    #           -d "project=$PROJECT_KEY"
+
+    #         curl -s -u ${{ secrets.SONAR_TOKEN }}: -X POST \
+    #           "${{ secrets.SONAR_HOST_URL }}/api/qualitygates/select" \
+    #           -d "gateName=$GATE_NAME" \
+    #           -d "projectKey=mi-proyecto-amate"
+    #       else
+    #         echo "El proyecto ya existe en SonarQube."
+    #       fi
+
+    #   # 2. ANALYSIS: Ejecutar el scanner
+    #   - name: SonarQube Scan
+    #     uses: sonarsource/sonarqube-scan-action@master
+    #     env:
+    #       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+    #       SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+    #     with:
+    #       args: >
+    #         -Dsonar.projectKey=mi-proyecto-amate
+    #         -Dsonar.sources=.
+    #         -Dsonar.verbose=true
+
+    #   # 3. QUALITY GATE: Esperar el resultado
+    #   - name: SonarQube Quality Gate check
+    #     id: sonarqube-quality-gate-check
+    #     uses: sonarsource/sonarqube-quality-gate-action@master
+    #     timeout-minutes: 5
+    #     env:
+    #       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+    #       SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
