@@ -25,6 +25,7 @@ jobs:
       - name: Set Quality Gate
         run: |
           GATE_NAME=$REPO_NAME
+          SONAR_ORGANIZATION="${{ secrets.SONAR_ORGANIZATION }}"
           
           # Verificar si el Quality Gate ya existe
           # 1. Obtenemos toda la lista en una variable
@@ -47,11 +48,13 @@ jobs:
             curl -s -u ${{ secrets.SONAR_TOKEN }}: -X POST \
               "${{ secrets.SONAR_HOST_URL }}/api/qualitygates/create" \
               -d "name=$GATE_NAME"
+              -d "organization=$SONAR_ORGANIZATION"
               
             # Añadir condiciones (90% coverage y 5% duplicación)
             curl -s -u ${{ secrets.SONAR_TOKEN }}: -X POST \
               "${{ secrets.SONAR_HOST_URL }}/api/qualitygates/create_condition" \
               -d "gateName=$GATE_NAME" \
+              -d "organization=$SONAR_ORGANIZATION" \
               -d "metric=coverage" \
               -d "op=LT" \
               -d "error=90"
@@ -59,6 +62,7 @@ jobs:
             curl -s -u ${{ secrets.SONAR_TOKEN }}: -X POST \
               "${{ secrets.SONAR_HOST_URL }}/api/qualitygates/create_condition" \
               -d "gateName=$GATE_NAME" \
+              -d "organization=$SONAR_ORGANIZATION" \
               -d "metric=duplicated_lines_density" \
               -d "op=GT" \
               -d "error=5"
