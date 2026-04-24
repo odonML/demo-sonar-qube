@@ -32,33 +32,33 @@ jobs:
           
           echo "Configuring Quality Gate: $GATE_EXISTS"
 
-          if [ "$GATE_EXISTS" -eq 0 ]; then
-            echo "El Quality Gate '$GATE_NAME' no existe. Creándolo..."
+        #   if [ "$GATE_EXISTS" -eq 0 ]; then
+        #     echo "El Quality Gate '$GATE_NAME' no existe. Creándolo..."
             
-            # Crear el Gate
-            curl -s -u ${{ secrets.SONAR_TOKEN }}: -X POST \
-              "${{ secrets.SONAR_HOST_URL }}/api/qualitygates/create" \
-              -d "name=$GATE_NAME"
+        #     # Crear el Gate
+        #     curl -s -u ${{ secrets.SONAR_TOKEN }}: -X POST \
+        #       "${{ secrets.SONAR_HOST_URL }}/api/qualitygates/create" \
+        #       -d "name=$GATE_NAME"
               
-            # Añadir condiciones (90% coverage y 5% duplicación)
-            curl -s -u ${{ secrets.SONAR_TOKEN }}: -X POST \
-              "${{ secrets.SONAR_HOST_URL }}/api/qualitygates/create_condition" \
-              -d "gateName=$GATE_NAME" \
-              -d "metric=coverage" \
-              -d "op=LT" \
-              -d "error=90"
+        #     # Añadir condiciones (90% coverage y 5% duplicación)
+        #     curl -s -u ${{ secrets.SONAR_TOKEN }}: -X POST \
+        #       "${{ secrets.SONAR_HOST_URL }}/api/qualitygates/create_condition" \
+        #       -d "gateName=$GATE_NAME" \
+        #       -d "metric=coverage" \
+        #       -d "op=LT" \
+        #       -d "error=90"
               
-            curl -s -u ${{ secrets.SONAR_TOKEN }}: -X POST \
-              "${{ secrets.SONAR_HOST_URL }}/api/qualitygates/create_condition" \
-              -d "gateName=$GATE_NAME" \
-              -d "metric=duplicated_lines_density" \
-              -d "op=GT" \
-              -d "error=5"
+        #     curl -s -u ${{ secrets.SONAR_TOKEN }}: -X POST \
+        #       "${{ secrets.SONAR_HOST_URL }}/api/qualitygates/create_condition" \
+        #       -d "gateName=$GATE_NAME" \
+        #       -d "metric=duplicated_lines_density" \
+        #       -d "op=GT" \
+        #       -d "error=5"
               
-            echo "Quality Gate '$GATE_NAME' creado con éxito."
-          else
-            echo "El Quality Gate '$GATE_NAME' ya existe. Saltando creación."
-          fi
+        #     echo "Quality Gate '$GATE_NAME' creado con éxito."
+        #   else
+        #     echo "El Quality Gate '$GATE_NAME' ya existe. Saltando creación."
+        #   fi
 
       - name: debug
         run: |
