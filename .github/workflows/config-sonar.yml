@@ -27,8 +27,17 @@ jobs:
           GATE_NAME=$REPO_NAME
           
           # Verificar si el Quality Gate ya existe
-          GATE_EXISTS=$(curl -s -u ${{ secrets.SONAR_TOKEN }}: "${{ secrets.SONAR_HOST_URL }}/api/qualitygates/list" | grep -c "\"name\":\"$GATE_NAME\"")
+          # 1. Obtenemos toda la lista en una variable
+          LISTA_GATES=$(curl -s -u ${{ secrets.SONAR_TOKEN }}: "${{ secrets.SONAR_HOST_URL }}/api/qualitygates/list")
           
+          # 2. Buscamos el nombre dentro de la variable (esto no rompe el script)
+          if [[ "$LISTA_GATES" == *"$GATE_NAME"* ]]; then
+            echo "El Gate ya existe."
+            GATE_EXISTS="1"
+          else
+            echo "El Gate no existe."
+            GATE_EXISTS="0"
+          fi
           echo "Configuring Quality Gate: $GATE_EXISTS"
 
         #   if [ "$GATE_EXISTS" -eq 0 ]; then
