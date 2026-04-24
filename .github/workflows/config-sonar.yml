@@ -25,12 +25,13 @@ jobs:
       - name: Set Quality Gate
         run: |
           GATE_NAME=$REPO_NAME
-          echo "Configuring Quality Gate: $GATE_NAME"
           
           # Verificar si el Quality Gate ya existe
           GATE_EXISTS=$(curl -s -u ${{ secrets.SONAR_TOKEN }}: \
             "${{ secrets.SONAR_HOST_URL }}/api/qualitygates/show?name=$GATE_NAME" | grep -c "\"name\":\"$GATE_NAME\"")
           
+          echo "Configuring Quality Gate: $GATE_EXISTS"
+
           if [ "$GATE_EXISTS" -eq 0 ]; then
             echo "El Quality Gate '$GATE_NAME' no existe. Creándolo..."
             
