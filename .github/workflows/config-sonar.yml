@@ -44,17 +44,22 @@ jobs:
 
       - name: Set conditions for the Quality Gate
         run: |
-            ls .github
-            GATE_CONDITIONS=$(jq -c '.conditions[]' .github/conditions-quality-gate.json)
-            echo "Conditions to set: ${GATE_CONDITIONS[0]}"
-            echo "Conditions: ${GATE_CONDITIONS[1]}"
-            # curl -s -u $SONAR_TOKEN: -X POST \
-            # "$SONAR_HOST_URL/api/qualitygates/create_condition" \
-            # -d "gateId=$GATE_ID" \
-            # -d "organization=$SONAR_ORGANIZATION" \
-            # -d "metric=coverage" \
-            # -d "op=LT" \
-            # -d "error=90"
+            jq -c '.conditions[]' .github/conditions-quality-gate.json | while read condition; do
+              metric=$(echo "$condition" | jq -r '.metric')
+              op=$(echo "$condition" | jq -r '.op')
+              error=$(echo "$condition" | jq -r '.error')
+
+              echo "Setting condition: metric=$metric, op=$op, error=$error for gate ID $GATE_ID"
+
+              Aquí iría la llamada a la API para crear la condición
+              curl -s -u $SONAR_TOKEN: -X POST \
+                "$SONAR_HOST_URL/api/qualitygates/create_condition" \
+                -d "gateId=$GATE_ID" \
+                -d "organization=$SONAR_ORGANIZATION" \
+                -d "metric=$metric" \
+                -d "op=$op" \
+                -d "error=$error"
+            done
 
       - name: debug
         run: |
