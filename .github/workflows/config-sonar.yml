@@ -62,10 +62,17 @@ jobs:
               echo "Setting condition: metric=$metric, op=$op, error=$error for gate ID $GATE_ID"
 
               if [ "$EXIST_GATE" = "true" ]; then
-                echo "Quality gate already exists, skipping condition creation."
-                continue
+                # Update the condition for the existing quality gate
+                curl -s -u $SONAR_TOKEN: -X POST \
+                "$SONAR_HOST_URL/api/qualitygates/update_condition" \
+                -d "gateId=$GATE_ID" \
+                -d "organization=$SONAR_ORGANIZATION" \
+                -d "metric=$metric" \
+                -d "op=$op" \
+                -d "error=$error"
+              echo "Updated condition for existing gate: metric=$metric, op=$op, error=$error"
               else
-                # Aquí iría la llamada a la API para crear la condición
+                # Create the condition for the quality gate
                 curl -s -u $SONAR_TOKEN: -X POST \
                 "$SONAR_HOST_URL/api/qualitygates/create_condition" \
                 -d "gateId=$GATE_ID" \
@@ -75,15 +82,6 @@ jobs:
                 -d "error=$error"
               fi
             done
-
-   
-            # curl -s -u $SONAR_TOKEN: -X POST \
-            # "$SONAR_HOST_URL/api/qualitygates/create_condition" \
-            # -d "gateId=$GATE_ID" \
-            # -d "organization=$SONAR_ORGANIZATION" \
-            # -d "metric=coverage" \
-            # -d "op=LT" \
-            # -d "error=90"
 
       - name: debug
         run: |
