@@ -63,13 +63,14 @@ jobs:
                 mapfile -t MY_CONDITION < <(echo "$CONDITIONS" | jq -c --arg metric_condition "$metric" '.[] | select(.metric == $metric_condition)')
                 echo "Existing conditions for gate ID $GATE_ID: $MY_CONDITION"
                 # Update the condition for the existing quality gate
-                # curl -s -u $SONAR_TOKEN: -X POST \
-                # "$SONAR_HOST_URL/api/qualitygates/update_condition" \
-                # -d "gateId=$GATE_ID" \
-                # -d "organization=$SONAR_ORGANIZATION" \
-                # -d "metric=$metric" \
-                # -d "op=$op" \
-                # -d "error=$error"
+                MY_CONDITION_ID=$(echo "$MY_CONDITION" | jq -r '.id')
+                curl -s -u $SONAR_TOKEN: -X POST \
+                "$SONAR_HOST_URL/api/qualitygates/update_condition" \
+                -d "id=$MY_CONDITION_ID" \
+                -d "organization=$SONAR_ORGANIZATION" \
+                -d "metric=$metric" \
+                -d "op=$op" \
+                -d "error=$error"
               echo "Updated condition for existing gate: metric=$metric, op=$op, error=$error"
               else
                 # Create the condition for the quality gate
