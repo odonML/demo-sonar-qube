@@ -26,8 +26,9 @@ jobs:
           GATE_ID=$(echo "$QUALITY_GATE" | jq -r '.id')
           echo "::debug::Quality Gate ID: $GATE_ID and info: $QUALITY_GATE"
 
-          EXIST_GATE=$(echo "$QUALITY_GATE" | jq -r '.name')
-          if [ -z "$EXIST_GATE" ]; then
+          EXIST_NAME_GATE=$(echo "$QUALITY_GATE" | jq -r '.name')
+          if [ -z "$EXIST_NAME_GATE" ]; then
+            echo "EXIST_GATE=false" >> $GITHUB_ENV
             echo "The quality gate '$GATE_NAME' does not exist. Creating..."
  
             QUALITY_GATE=$(curl -s -u $SONAR_TOKEN: -X POST \
@@ -38,10 +39,10 @@ jobs:
               
             echo "::debug::Created Quality Gate ID: $GATE_ID and info: $QUALITY_GATE"
           else
+            echo "EXIST_GATE=true" >> $GITHUB_ENV
             echo "The quality gate '$GATE_NAME' already exists. Skipping creation."
           fi
           echo "GATE_ID=$GATE_ID" >> $GITHUB_ENV
-          echo "EXIST_GATE=[ -z \"$EXIST_GATE\" ]" >> $GITHUB_ENV
           echo "QUALITY_GATE=$QUALITY_GATE" >> $GITHUB_ENV
 
 
@@ -51,7 +52,7 @@ jobs:
             echo "GATE_ID: $GATE_ID"
             echo "EXIST_GATE: $EXIST_GATE"
             echo "QUALITY_GATE: $QUALITY_GATE"
-            
+
             jq -c '.conditions[]' .github/conditions-quality-gate.json | while read condition; do
               metric=$(echo "$condition" | jq -r '.metric')
               op=$(echo "$condition" | jq -r '.op')
