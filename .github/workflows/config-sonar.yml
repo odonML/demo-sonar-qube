@@ -46,8 +46,8 @@ jobs:
         run: |
             ls .github
             GATE_CONDITIONS=$(jq -r '.conditions[]' .github/conditions-quality-gate.json)
-            echo "Conditions to set: ${#GATE_CONDITIONS[@]}"
-            echo "Conditions: $GATE_CONDITIONS"
+            echo "Conditions to set: ${GATE_CONDITIONS[0]}"
+            echo "Conditions: ${GATE_CONDITIONS[1]}"
             # curl -s -u $SONAR_TOKEN: -X POST \
             # "$SONAR_HOST_URL/api/qualitygates/create_condition" \
             # -d "gateId=$GATE_ID" \
