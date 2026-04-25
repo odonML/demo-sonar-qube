@@ -60,7 +60,7 @@ jobs:
               error=$(echo "$condition" | jq -r '.error')
 
               if [ "$EXIST_GATE" = "true" ]; then
-                mapfile -t MY_CONDITION < <(echo "$CONDITIONS" | jq -c --arg metric_condition "$metric" '.[] | select(.metric == "$metric_condition")')
+                mapfile -t MY_CONDITION < <(echo "$CONDITIONS" | jq -c --arg metric_condition "$metric" '.[] | select(.metric == $metric_condition)')
                 echo "Existing conditions for gate ID $GATE_ID: $MY_CONDITION"
                 # Update the condition for the existing quality gate
                 # curl -s -u $SONAR_TOKEN: -X POST \
