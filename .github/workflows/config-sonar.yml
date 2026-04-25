@@ -20,14 +20,14 @@ jobs:
 
           GATE_NAME=$REPO_NAME
           SONAR_ORGANIZATION="${{ secrets.SONAR_ORGANIZATION }}"
-          GATE_ID="" 
-
+          
           RAW_LIST_GATES=$(curl -s -u ${{ secrets.SONAR_TOKEN }}: "${{ secrets.SONAR_HOST_URL }}/api/qualitygates/list?organization=$SONAR_ORGANIZATION")
           QUALITY_GATE=$(echo "$RAW_LIST_GATES" | jq -r --arg gate_name "$GATE_NAME" '.qualitygates[] | select(.name == $gate_name)')
+          GATE_ID=$(echo "$QUALITY_GATE" | jq -r '.id')
           echo "lista de gates: $QUALITY_GATE"
 
-          GATE_ID=$(echo "$QUALITY_GATE" | jq -r '.name')
-          if [ -z "$GATE_ID" ]; then
+          EXIST_GATE=$(echo "$QUALITY_GATE" | jq -r '.name')
+          if [ -z "$EXIST_GATE" ]; then
             echo "El Quality Gate '$GATE_NAME' no existe. Creándolo..."
             
             # Crear el Gate
@@ -45,7 +45,7 @@ jobs:
            # Añadir condiciones (90% coverage y 5% duplicación)
             curl -s -u ${{ secrets.SONAR_TOKEN }}: -X POST \
               "${{ secrets.SONAR_HOST_URL }}/api/qualitygates/create_condition" \
-              -d "gateName=$GATE_NAME" \
+              -d "gateId=$GATE_ID" \
               -d "organization=$SONAR_ORGANIZATION" \
               -d "metric=coverage" \
               -d "op=LT" \
@@ -53,7 +53,7 @@ jobs:
               
             curl -s -u ${{ secrets.SONAR_TOKEN }}: -X POST \
               "${{ secrets.SONAR_HOST_URL }}/api/qualitygates/create_condition" \
-              -d "gateName=$GATE_NAME" \
+              -d "gateId=$GATE_ID" \
               -d "organization=$SONAR_ORGANIZATION" \
               -d "metric=duplicated_lines_density" \
               -d "op=GT" \
