@@ -42,8 +42,8 @@ jobs:
             echo "EXIST_GATE=true" >> $GITHUB_ENV
             echo "The quality gate '$GATE_NAME' already exists. Skipping creation."
           fi
-          CONDITIONS=$(echo "$QUALITY_GATE" | jq -r '.conditions[]')
           echo "GATE_ID=$GATE_ID" >> $GITHUB_ENV
+          CONDITIONS=$(echo "$QUALITY_GATE" | jq -c '.conditions[]')
           echo "CONDITIONS=$CONDITIONS" >> $GITHUB_ENV
 
 
