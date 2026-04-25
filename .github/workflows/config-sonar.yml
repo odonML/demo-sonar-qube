@@ -13,18 +13,12 @@ jobs:
         uses: actions/checkout@v4
         with:
             fetch-depth: 0
-      - name: Get Repository name
-        id: get_repo_name
-        run: |
-            FULL_REPO=${GITHUB_REPOSITORY}
-            REPO=${FULL_REPO#*/}
-            echo "REPO_NAME=$REPO" >> $GITHUB_ENV
-
-
-
       - name: Set Quality Gate
         run: |
-          GATE_NAME="$REPO_NAME-gate"
+          FULL_REPO=${GITHUB_REPOSITORY}
+          REPO_NAME=${FULL_REPO#*/}
+
+          GATE_NAME=$REPO_NAME
           SONAR_ORGANIZATION="${{ secrets.SONAR_ORGANIZATION }}"
           GATE_ID="" 
 
@@ -32,29 +26,19 @@ jobs:
           QUALITY_GATE=$(echo "$RAW_LIST_GATES" | jq -r --arg gate_name "$GATE_NAME" '.qualitygates[] | select(.name == $gate_name)')
           echo "lista de gates: $QUALITY_GATE"
 
-        #   # 2. Buscamos el nombre dentro de la variable (esto no rompe el script)
-        #   if [[ "$LISTA_GATES" == *"$GATE_NAME"* ]]; then
-        #     echo "El Gate ya existe."
-        #     GATE_EXISTS="1"
-        #   else
-        #     echo "El Gate no existe."
-        #     GATE_EXISTS="0"
-        #   fi
-        #   echo "Configuring Quality Gate: $GATE_EXISTS"
-
-        #   if [ "$GATE_EXISTS" -eq 0 ]; then
-        #     echo "El Quality Gate '$GATE_NAME' no existe. Creándolo..."
+          if [ "$QUALITY_GATE" -z ]; then
+            echo "El Quality Gate '$GATE_NAME' no existe. Creándolo..."
             
-        #     # Crear el Gate
-        #     GATE_INFO=$(curl -s -u ${{ secrets.SONAR_TOKEN }}: -X POST \
-        #       "${{ secrets.SONAR_HOST_URL }}/api/qualitygates/create" \
-        #       -d "name=$GATE_NAME" \
-        #       -d "organization=$SONAR_ORGANIZATION")
+            # Crear el Gate
+            GATE_INFO=$(curl -s -u ${{ secrets.SONAR_TOKEN }}: -X POST \
+              "${{ secrets.SONAR_HOST_URL }}/api/qualitygates/create" \
+              -d "name=$GATE_NAME" \
+              -d "organization=$SONAR_ORGANIZATION")
               
-        #     echo "Quality Gate '$GATE_NAME' creado con éxito."
-        #   else
-        #     echo "El Quality Gate '$GATE_NAME' ya existe. Saltando creación."
-        #   fi
+            echo "Quality Gate '$GATE_NAME' creado con éxito."
+          else
+            echo "El Quality Gate '$GATE_NAME' ya existe. Saltando creación."
+          fi
 
         #    # Añadir condiciones (90% coverage y 5% duplicación)
         #     curl -s -u ${{ secrets.SONAR_TOKEN }}: -X POST \
