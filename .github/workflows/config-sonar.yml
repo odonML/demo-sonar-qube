@@ -29,7 +29,7 @@ jobs:
           GATE_ID="" 
 
           RAW_LIST_GATES=$(curl -s -u ${{ secrets.SONAR_TOKEN }}: "${{ secrets.SONAR_HOST_URL }}/api/qualitygates/list?organization=$SONAR_ORGANIZATION")
-          QUALITY_GATE=$(echo "$RAW_LIST_GATES" | jq -r '.qualitygates[] | select(.name == $GATE_NAME)')
+          QUALITY_GATE=$(echo "$RAW_LIST_GATES" | jq -r '.qualitygates[] | select(.name=="$GATE_NAME")')
           echo "lista de gates: $QUALITY_GATE"
 
         #   # 2. Buscamos el nombre dentro de la variable (esto no rompe el script)
