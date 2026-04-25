@@ -62,14 +62,16 @@ jobs:
               echo "Setting condition: metric=$metric, op=$op, error=$error for gate ID $GATE_ID"
 
               if [ "$EXIST_GATE" = "true" ]; then
+                mapfile -t CONDITIONS_ARRAY < <(echo "$CONDITIONS" | jq -c '.[]')
+                echo "Existing conditions for gate ID $GATE_ID: ${CONDITIONS_ARRAY[*]}"
                 # Update the condition for the existing quality gate
-                curl -s -u $SONAR_TOKEN: -X POST \
-                "$SONAR_HOST_URL/api/qualitygates/update_condition" \
-                -d "gateId=$GATE_ID" \
-                -d "organization=$SONAR_ORGANIZATION" \
-                -d "metric=$metric" \
-                -d "op=$op" \
-                -d "error=$error"
+                # curl -s -u $SONAR_TOKEN: -X POST \
+                # "$SONAR_HOST_URL/api/qualitygates/update_condition" \
+                # -d "gateId=$GATE_ID" \
+                # -d "organization=$SONAR_ORGANIZATION" \
+                # -d "metric=$metric" \
+                # -d "op=$op" \
+                # -d "error=$error"
               echo "Updated condition for existing gate: metric=$metric, op=$op, error=$error"
               else
                 # Create the condition for the quality gate
