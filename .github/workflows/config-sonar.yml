@@ -24,7 +24,7 @@ jobs:
 
       - name: Set Quality Gate
         run: |
-          GATE_NAME=$REPO_NAME
+          GATE_NAME="$REPO_NAME-gate"
           SONAR_ORGANIZATION="${{ secrets.SONAR_ORGANIZATION }}"
           GATE_ID="" 
 
