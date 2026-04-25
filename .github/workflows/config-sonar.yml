@@ -22,7 +22,6 @@ jobs:
       - name: Create or verify SonarQube Quality Gate
         run: |
           GATE_NAME=$REPO_NAME
-
           QUALITY_GATE=$(curl -s -u $SONAR_TOKEN: "$SONAR_HOST_URL/api/qualitygates/list?organization=$SONAR_ORGANIZATION" | jq -r --arg gate_name "$GATE_NAME" '.qualitygates[] | select(.name == $gate_name)')
           GATE_ID=$(echo "$QUALITY_GATE" | jq -r '.id')
           echo "::debug::Quality Gate ID: $GATE_ID and info: $QUALITY_GATE"
@@ -31,19 +30,28 @@ jobs:
           if [ -z "$EXIST_GATE" ]; then
             echo "The quality gate '$GATE_NAME' does not exist. Creating..."
  
-            GATE_INFO=$(curl -s -u $SONAR_TOKEN: -X POST \
+            QUALITY_GATE=$(curl -s -u $SONAR_TOKEN: -X POST \
               "$SONAR_HOST_URL/api/qualitygates/create" \
               -d "name=$GATE_NAME" \
               -d "organization=$SONAR_ORGANIZATION")
-            GATE_ID=$(echo "$GATE_INFO" | jq -r '.id')
+            GATE_ID=$(echo "$QUALITY_GATE" | jq -r '.id')
               
-            echo "::debug::Created Quality Gate ID: $GATE_ID and info: $GATE_INFO"
+            echo "::debug::Created Quality Gate ID: $GATE_ID and info: $QUALITY_GATE"
           else
             echo "The quality gate '$GATE_NAME' already exists. Skipping creation."
           fi
+          echo "GATE_ID=$GATE_ID" >> $GITHUB_ENV
+          echo "EXIST_GATE=[ -z \"$EXIST_GATE\" ]" >> $GITHUB_ENV
+          echo "QUALITY_GATE=$QUALITY_GATE" >> $GITHUB_ENV
+
 
       - name: Set conditions for the Quality Gate
         run: |
+            ls .github
+            echo "GATE_ID: $GATE_ID"
+            echo "EXIST_GATE: $EXIST_GATE"
+            echo "QUALITY_GATE: $QUALITY_GATE"
+            
             jq -c '.conditions[]' .github/conditions-quality-gate.json | while read condition; do
               metric=$(echo "$condition" | jq -r '.metric')
               op=$(echo "$condition" | jq -r '.op')
@@ -51,15 +59,24 @@ jobs:
 
               echo "Setting condition: metric=$metric, op=$op, error=$error for gate ID $GATE_ID"
 
-              Aquí iría la llamada a la API para crear la condición
-              curl -s -u $SONAR_TOKEN: -X POST \
-                "$SONAR_HOST_URL/api/qualitygates/create_condition" \
-                -d "gateId=$GATE_ID" \
-                -d "organization=$SONAR_ORGANIZATION" \
-                -d "metric=$metric" \
-                -d "op=$op" \
-                -d "error=$error"
+              # Aquí iría la llamada a la API para crear la condición
+              # curl -s -u $SONAR_TOKEN: -X POST \
+              #   "$SONAR_HOST_URL/api/qualitygates/create_condition" \
+              #   -d "gateId=$GATE_ID" \
+              #   -d "organization=$SONAR_ORGANIZATION" \
+              #   -d "metric=$metric" \
+              #   -d "op=$op" \
+              #   -d "error=$error"
             done
+
+   
+            # curl -s -u $SONAR_TOKEN: -X POST \
+            # "$SONAR_HOST_URL/api/qualitygates/create_condition" \
+            # -d "gateId=$GATE_ID" \
+            # -d "organization=$SONAR_ORGANIZATION" \
+            # -d "metric=coverage" \
+            # -d "op=LT" \
+            # -d "error=90"
 
       - name: debug
         run: |
