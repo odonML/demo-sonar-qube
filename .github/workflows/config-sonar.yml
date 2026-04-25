@@ -45,8 +45,9 @@ jobs:
       - name: Set conditions for the Quality Gate
         run: |
             ls .github
-            GATE_CONDITIONS=$(jq -r '.conditions[] | "metric=\(.metric) op=\(.op) error=\(.error)"' .github/conditions-quality-gate.json)
+            GATE_CONDITIONS=$(jq -r '.conditions[]' .github/conditions-quality-gate.json)
             echo "Conditions to set: ${#GATE_CONDITIONS}"
+            echo "Conditions: $GATE_CONDITIONS"
             # curl -s -u $SONAR_TOKEN: -X POST \
             # "$SONAR_HOST_URL/api/qualitygates/create_condition" \
             # -d "gateId=$GATE_ID" \
