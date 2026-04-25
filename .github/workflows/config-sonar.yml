@@ -30,9 +30,9 @@ jobs:
 
           # Verificar si el Quality Gate ya existe
           # 1. Obtenemos toda la lista en una variable
-          LISTA_GATES=$(curl -s -u ${{ secrets.SONAR_TOKEN }}: "${{ secrets.SONAR_HOST_URL }}/api/qualitygates/list?organization=$SONAR_ORGANIZATION")
+          LISTA_GATES=$(curl -s -u ${{ secrets.SONAR_TOKEN }}: "${{ secrets.SONAR_HOST_URL }}/api/qualitygates/list?organization=$SONAR_ORGANIZATION" | jq -r '.qualitygates[] | .name')
             echo "lista de gates: $LISTA_GATES"
-        #   # | jq -r '.qualitygates[] | select(.organization == "'$SONAR_ORGANIZATION'") | .name'
+        #   # 
         #   # 2. Buscamos el nombre dentro de la variable (esto no rompe el script)
         #   if [[ "$LISTA_GATES" == *"$GATE_NAME"* ]]; then
         #     echo "El Gate ya existe."
