@@ -26,8 +26,8 @@ jobs:
           QUALITY_GATE=$(echo "$RAW_LIST_GATES" | jq -r --arg gate_name "$GATE_NAME" '.qualitygates[] | select(.name == $gate_name)')
           echo "lista de gates: $QUALITY_GATE"
 
-          GATE_ID=$(echo "$RESPONSE" | jq -r '.id')
-          if [ "$QUALITY_GATE" -z ]; then
+          GATE_ID=$(echo "$QUALITY_GATE" | jq -r '.id')
+          if [ "$GATE_ID" -z ]; then
             echo "El Quality Gate '$GATE_NAME' no existe. Creándolo..."
             
             # Crear el Gate
