@@ -35,6 +35,8 @@ jobs:
               "${{ secrets.SONAR_HOST_URL }}/api/qualitygates/create" \
               -d "name=$GATE_NAME" \
               -d "organization=$SONAR_ORGANIZATION")
+
+            GATE_ID=$(echo "$GATE_INFO" | jq -r '.id')
               
             echo "Respuesta de creación del Quality Gate: $GATE_INFO"
             echo "Quality Gate '$GATE_NAME' creado con éxito."
