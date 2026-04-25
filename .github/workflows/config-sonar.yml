@@ -42,22 +42,22 @@ jobs:
             echo "El Quality Gate '$GATE_NAME' ya existe. Saltando creación."
           fi
 
-        #    # Añadir condiciones (90% coverage y 5% duplicación)
-        #     curl -s -u ${{ secrets.SONAR_TOKEN }}: -X POST \
-        #       "${{ secrets.SONAR_HOST_URL }}/api/qualitygates/create_condition" \
-        #       -d "gateName=$GATE_NAME" \
-        #       -d "organization=$SONAR_ORGANIZATION" \
-        #       -d "metric=coverage" \
-        #       -d "op=LT" \
-        #       -d "error=90"
+           # Añadir condiciones (90% coverage y 5% duplicación)
+            curl -s -u ${{ secrets.SONAR_TOKEN }}: -X POST \
+              "${{ secrets.SONAR_HOST_URL }}/api/qualitygates/create_condition" \
+              -d "gateName=$GATE_NAME" \
+              -d "organization=$SONAR_ORGANIZATION" \
+              -d "metric=coverage" \
+              -d "op=LT" \
+              -d "error=90"
               
-        #     curl -s -u ${{ secrets.SONAR_TOKEN }}: -X POST \
-        #       "${{ secrets.SONAR_HOST_URL }}/api/qualitygates/create_condition" \
-        #       -d "gateName=$GATE_NAME" \
-        #       -d "organization=$SONAR_ORGANIZATION" \
-        #       -d "metric=duplicated_lines_density" \
-        #       -d "op=GT" \
-        #       -d "error=5"
+            curl -s -u ${{ secrets.SONAR_TOKEN }}: -X POST \
+              "${{ secrets.SONAR_HOST_URL }}/api/qualitygates/create_condition" \
+              -d "gateName=$GATE_NAME" \
+              -d "organization=$SONAR_ORGANIZATION" \
+              -d "metric=duplicated_lines_density" \
+              -d "op=GT" \
+              -d "error=5"
 
       - name: debug
         run: |
