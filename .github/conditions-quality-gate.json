@@ -1,0 +1,4 @@
+[
+    {"metric": "coverage", "op": "LT", "error": "90"},
+    {"metric": "duplicated_lines_density", "op": "GT", "error": "5"}
+]
