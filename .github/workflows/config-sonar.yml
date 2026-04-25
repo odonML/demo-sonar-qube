@@ -61,14 +61,19 @@ jobs:
 
               echo "Setting condition: metric=$metric, op=$op, error=$error for gate ID $GATE_ID"
 
-              # Aquí iría la llamada a la API para crear la condición
-              curl -s -u $SONAR_TOKEN: -X POST \
+              if [ "$EXIST_GATE" = "true" ]; then
+                echo "Quality gate already exists, skipping condition creation."
+                continue
+              else
+                # Aquí iría la llamada a la API para crear la condición
+                curl -s -u $SONAR_TOKEN: -X POST \
                 "$SONAR_HOST_URL/api/qualitygates/create_condition" \
                 -d "gateId=$GATE_ID" \
                 -d "organization=$SONAR_ORGANIZATION" \
                 -d "metric=$metric" \
                 -d "op=$op" \
                 -d "error=$error"
+              fi
             done
 
    
