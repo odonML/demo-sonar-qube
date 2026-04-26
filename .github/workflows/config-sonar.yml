@@ -87,7 +87,7 @@ jobs:
           
           echo "Checking if project '$PROJECT_NAME' with key '$PROJECT_KEY' exists in SonarQube..."
           # Intentamos buscar el proyecto
-          STATUS_CODE=$(curl -s -o /dev/null -w "%{http_code}" -u $SONAR_TOKEN: \
+          STATUS_CODE=$(curl -u $SONAR_TOKEN: \
             "$SONAR_HOST_URL/api/projects/search?organization=$SONAR_ORGANIZATION&projects=$PROJECT_KEY")
 
           echo "HTTP status code: $STATUS_CODE"
