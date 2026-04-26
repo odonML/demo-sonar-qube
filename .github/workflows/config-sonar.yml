@@ -49,11 +49,6 @@ jobs:
 
       - name: Set conditions for the Quality Gate
         run: |
-            ls .github
-            echo "GATE_ID: $GATE_ID"
-            echo "EXIST_GATE: $EXIST_GATE"
-            echo "CONDITIONS: $CONDITIONS"
-
             jq -c '.conditions[]' .github/conditions-quality-gate.json | while read condition; do
               metric=$(echo "$condition" | jq -r '.metric')
               op=$(echo "$condition" | jq -r '.op')
@@ -61,9 +56,8 @@ jobs:
 
               if [ "$EXIST_GATE" = "true" ]; then
                 mapfile -t MY_CONDITION < <(echo "$CONDITIONS" | jq -c --arg metric_condition "$metric" '.[] | select(.metric == $metric_condition)')
-                echo "Existing conditions for gate ID $GATE_ID: $MY_CONDITION"
-                # Update the condition for the existing quality gate
                 MY_CONDITION_ID=$(echo "$MY_CONDITION" | jq -r '.id')
+
                 curl -s -u $SONAR_TOKEN: -X POST \
                 "$SONAR_HOST_URL/api/qualitygates/update_condition" \
                 -d "id=$MY_CONDITION_ID" \
@@ -71,9 +65,10 @@ jobs:
                 -d "metric=$metric" \
                 -d "op=$op" \
                 -d "error=$error"
-              echo "Updated condition for existing gate: metric=$metric, op=$op, error=$error"
+
+                echo "Updated condition for existing gate: metric=$metric, op=$op, error=$error"
               else
-                # Create the condition for the quality gate
+                echo "Creating condition for new gate: metric=$metric, op=$op, error=$error"
                 curl -s -u $SONAR_TOKEN: -X POST \
                 "$SONAR_HOST_URL/api/qualitygates/create_condition" \
                 -d "gateId=$GATE_ID" \
@@ -83,36 +78,38 @@ jobs:
                 -d "error=$error"
               fi
             done
+    
+      # 1. PROVISION: Verificar si existe o crear el proyecto
+      - name: Ensure SonarQube Project Exists
+        run: |
+          PROJECT_NAME="$REPO_NAME"
+          PROJECT_KEY="${REPO_NAME,,}" # Convertir a minúsculas para el key
+          
+          echo "Checking if project '$PROJECT_NAME' with key '$PROJECT_KEY' exists in SonarQube..."
+        #   # Intentamos buscar el proyecto
+        #   STATUS_CODE=$(curl -s -o /dev/null -w "%{http_code}" -u $SONAR_TOKEN: \
+        #     "$SONAR_HOST_URL/api/projects/search?projects=$PROJECT_KEY")
+          
+        #   if [ "$STATUS_CODE" -ne 200 ]; then
+        #     echo "Proyecto no encontrado, creando..."
+        #     curl -u $SONAR_TOKEN: -X POST \
+        #       "$SONAR_HOST_URL/api/projects/create" \
+        #       -d "organization=$SONAR_ORGANIZATION" \
+        #       -d "name=$PROJECT_NAME" \
+        #       -d "project=$PROJECT_KEY"
+
+        #     curl -s -u $SONAR_TOKEN: -X POST \
+        #       "$SONAR_HOST_URL/api/qualitygates/select" \
+        #       -d "organization=$SONAR_ORGANIZATION"
+        #       -d "gateName=$GATE_NAME" \
+        #       -d "projectKey=$PROJECT_KEY" \
+        #   else
+        #     echo "El proyecto ya existe en SonarQube."
+        #   fi
 
       - name: debug
         run: |
             echo "REPO_NAME: $REPO_NAME"
-    
-    #   # 1. PROVISION: Verificar si existe o crear el proyecto
-    #   - name: Ensure SonarQube Project Exists
-    #     run: |
-    #       PROJECT_KEY="mi-proyecto-amate"
-    #       PROJECT_NAME="$REPO_NAME"
-          
-    #       # Intentamos buscar el proyecto
-    #       STATUS_CODE=$(curl -s -o /dev/null -w "%{http_code}" -u ${{ secrets.SONAR_TOKEN }}: \
-    #         "${{ secrets.SONAR_HOST_URL }}/api/projects/search?projects=$PROJECT_KEY")
-          
-    #       if [ "$STATUS_CODE" -ne 200 ]; then
-    #         echo "Proyecto no encontrado, creando..."
-    #         curl -u ${{ secrets.SONAR_TOKEN }}: -X POST \
-    #           "${{ secrets.SONAR_HOST_URL }}/api/projects/create" \
-    #           -d "name=$PROJECT_NAME" \
-    #           -d "project=$PROJECT_KEY"
-
-    #         curl -s -u ${{ secrets.SONAR_TOKEN }}: -X POST \
-    #           "${{ secrets.SONAR_HOST_URL }}/api/qualitygates/select" \
-    #           -d "gateName=$GATE_NAME" \
-    #           -d "projectKey=mi-proyecto-amate"
-    #       else
-    #         echo "El proyecto ya existe en SonarQube."
-    #       fi
-
     #   # 2. ANALYSIS: Ejecutar el scanner
     #   - name: SonarQube Scan
     #     uses: sonarsource/sonarqube-scan-action@master
