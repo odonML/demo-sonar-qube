@@ -86,26 +86,26 @@ jobs:
           PROJECT_KEY="${REPO_NAME,,}" # Convertir a minúsculas para el key
           
           echo "Checking if project '$PROJECT_NAME' with key '$PROJECT_KEY' exists in SonarQube..."
-        #   # Intentamos buscar el proyecto
-        #   STATUS_CODE=$(curl -s -o /dev/null -w "%{http_code}" -u $SONAR_TOKEN: \
-        #     "$SONAR_HOST_URL/api/projects/search?projects=$PROJECT_KEY")
+          # Intentamos buscar el proyecto
+          STATUS_CODE=$(curl -s -o /dev/null -w "%{http_code}" -u $SONAR_TOKEN: \
+            "$SONAR_HOST_URL/api/projects/search?projects=$PROJECT_KEY")
           
-        #   if [ "$STATUS_CODE" -ne 200 ]; then
-        #     echo "Proyecto no encontrado, creando..."
-        #     curl -u $SONAR_TOKEN: -X POST \
-        #       "$SONAR_HOST_URL/api/projects/create" \
-        #       -d "organization=$SONAR_ORGANIZATION" \
-        #       -d "name=$PROJECT_NAME" \
-        #       -d "project=$PROJECT_KEY"
+          if [ "$STATUS_CODE" -ne 200 ]; then
+            echo "Proyecto no encontrado, creando..."
+            curl -u $SONAR_TOKEN: -X POST \
+              "$SONAR_HOST_URL/api/projects/create" \
+              -d "organization=$SONAR_ORGANIZATION" \
+              -d "name=$PROJECT_NAME" \
+              -d "project=$PROJECT_KEY"
 
-        #     curl -s -u $SONAR_TOKEN: -X POST \
-        #       "$SONAR_HOST_URL/api/qualitygates/select" \
-        #       -d "organization=$SONAR_ORGANIZATION"
-        #       -d "gateName=$GATE_NAME" \
-        #       -d "projectKey=$PROJECT_KEY" \
-        #   else
-        #     echo "El proyecto ya existe en SonarQube."
-        #   fi
+            curl -s -u $SONAR_TOKEN: -X POST \
+              "$SONAR_HOST_URL/api/qualitygates/select" \
+              -d "organization=$SONAR_ORGANIZATION"
+              -d "gateName=$GATE_NAME" \
+              -d "projectKey=$PROJECT_KEY" \
+          else
+            echo "El proyecto ya existe en SonarQube."
+          fi
 
       - name: debug
         run: |
