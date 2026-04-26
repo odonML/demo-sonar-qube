@@ -87,10 +87,20 @@ jobs:
           
           echo "Checking if project '$PROJECT_NAME' with key '$PROJECT_KEY' exists in SonarQube..."
           # Intentamos buscar el proyecto
-          STATUS_CODE=$(curl -u $SONAR_TOKEN: \
+          RESPONSE=$(curl -u $SONAR_TOKEN: \
             "$SONAR_HOST_URL/api/projects/search?organization=$SONAR_ORGANIZATION&projects=$PROJECT_KEY")
 
-          echo "HTTP status code: $STATUS_CODE"
+          echo "Response: $RESPONSE"
+
+          TOTAL_FOUND=$(echo "$RESPONSE" | jq '.paging.total')
+
+          if [ "$TOTAL_FOUND" -eq 0 ]; then
+            echo "PROYECTO_EXISTE=false" >> $GITHUB_ENV
+            echo "El proyecto $PROJECT_KEY no existe. Procediendo a crear..."
+          else
+            echo "PROYECTO_EXISTE=true" >> $GITHUB_ENV
+            echo "Proyecto encontrado. Saltando creación."
+          fi
           
         #   if [ "$STATUS_CODE" -ne 200 ]; then
         #     echo "Proyecto no encontrado, creando..."
