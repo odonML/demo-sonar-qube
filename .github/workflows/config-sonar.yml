@@ -88,7 +88,7 @@ jobs:
           echo "Checking if project '$PROJECT_NAME' with key '$PROJECT_KEY' exists in SonarQube..."
           # Intentamos buscar el proyecto
           STATUS_CODE=$(curl -s -o /dev/null -w "%{http_code}" -u $SONAR_TOKEN: \
-            "$SONAR_HOST_URL/api/projects/search?projects=$PROJECT_KEY")
+            "$SONAR_HOST_URL/api/projects/search?organization=$SONAR_ORGANIZATION&projects=$PROJECT_KEY")
 
           echo "HTTP status code: $STATUS_CODE"
           
@@ -99,16 +99,15 @@ jobs:
               -d "organization=$SONAR_ORGANIZATION" \
               -d "name=$PROJECT_NAME" \
               -d "project=$PROJECT_KEY"
-
-            curl -s -u $SONAR_TOKEN: -X POST \
-              "$SONAR_HOST_URL/api/qualitygates/select" \
-              -d "organization=$SONAR_ORGANIZATION" \
-              -d "gateId=$GATE_ID" \
-              -d "projectKey=$PROJECT_KEY" \
           else
             echo "El proyecto ya existe en SonarQube."
           fi
 
+            #           curl -s -u $SONAR_TOKEN: -X POST \
+            #   "$SONAR_HOST_URL/api/qualitygates/select" \
+            #   -d "organization=$SONAR_ORGANIZATION" \
+            #   -d "gateId=$GATE_ID" \
+            #   -d "projectKey=$PROJECT_KEY" \
       - name: debug
         run: |
             echo "REPO_NAME: $REPO_NAME"
