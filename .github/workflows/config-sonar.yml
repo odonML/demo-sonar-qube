@@ -92,16 +92,16 @@ jobs:
 
           echo "HTTP status code: $STATUS_CODE"
           
-          if [ "$STATUS_CODE" -ne 200 ]; then
-            echo "Proyecto no encontrado, creando..."
-            curl -u $SONAR_TOKEN: -X POST \
-              "$SONAR_HOST_URL/api/projects/create" \
-              -d "organization=$SONAR_ORGANIZATION" \
-              -d "name=$PROJECT_NAME" \
-              -d "project=$PROJECT_KEY"
-          else
-            echo "El proyecto ya existe en SonarQube."
-          fi
+        #   if [ "$STATUS_CODE" -ne 200 ]; then
+        #     echo "Proyecto no encontrado, creando..."
+        #     curl -u $SONAR_TOKEN: -X POST \
+        #       "$SONAR_HOST_URL/api/projects/create" \
+        #       -d "organization=$SONAR_ORGANIZATION" \
+        #       -d "name=$PROJECT_NAME" \
+        #       -d "project=$PROJECT_KEY"
+        #   else
+        #     echo "El proyecto ya existe en SonarQube."
+        #   fi
 
             #           curl -s -u $SONAR_TOKEN: -X POST \
             #   "$SONAR_HOST_URL/api/qualitygates/select" \
