@@ -95,7 +95,6 @@ jobs:
           TOTAL_FOUND=$(echo "$RESPONSE" | jq '.paging.total')
 
           if [ "$TOTAL_FOUND" -eq 0 ]; then
-            echo "PROJECT_EXISTS=false" >> $GITHUB_ENV
             echo "El proyecto $PROJECT_KEY no existe. Procediendo a crear..."
             curl -u $SONAR_TOKEN: -X POST \
               "$SONAR_HOST_URL/api/projects/create" \
@@ -103,16 +102,15 @@ jobs:
               -d "name=$PROJECT_NAME" \
               -d "project=$PROJECT_KEY"
           else
-            echo "PROJECT_EXISTS=true" >> $GITHUB_ENV
             echo "Proyecto encontrado. Saltando creación. "
           fi
-          
 
-            #           curl -s -u $SONAR_TOKEN: -X POST \
-            #   "$SONAR_HOST_URL/api/qualitygates/select" \
-            #   -d "organization=$SONAR_ORGANIZATION" \
-            #   -d "gateId=$GATE_ID" \
-            #   -d "projectKey=$PROJECT_KEY" \
+          curl -s -u $SONAR_TOKEN: -X POST \
+            "$SONAR_HOST_URL/api/qualitygates/select" \
+            -d "organization=$SONAR_ORGANIZATION" \
+            -d "gateId=$GATE_ID" \
+            -d "projectKey=$PROJECT_KEY" \
+
       - name: debug
         run: |
             echo "REPO_NAME: $REPO_NAME"
