@@ -104,7 +104,7 @@ jobs:
               -d "project=$PROJECT_KEY"
           else
             echo "PROJECT_EXISTS=true" >> $GITHUB_ENV
-            echo "Proyecto encontrado. Saltando creación."
+            echo "Proyecto encontrado. Saltando creación. "
           fi
           
 
