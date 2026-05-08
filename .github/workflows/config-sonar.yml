@@ -13,107 +13,115 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-            fetch-depth: 0
-      - name: Repository name
-        run: echo "REPO_NAME=${GITHUB_REPOSITORY#*/}" >> $GITHUB_ENV
-      - name: Create or verify SonarQube Quality Gate
-        run: |
-          GATE_NAME=$REPO_NAME
-          QUALITY_GATE=$(curl -s -u $SONAR_TOKEN: "$SONAR_HOST_URL/api/qualitygates/list?organization=$SONAR_ORGANIZATION" | jq -r --arg gate_name "$GATE_NAME" '.qualitygates[] | select(.name == $gate_name)')
-          GATE_ID=$(echo "$QUALITY_GATE" | jq -r '.id')
-          echo "::debug::Quality Gate ID: $GATE_ID and info: $QUALITY_GATE"
+      # - name: Checkout code
+      #   uses: actions/checkout@v4
+      #   with:
+      #       fetch-depth: 0
+      # - name: Repository name
+      #   run: echo "REPO_NAME=${GITHUB_REPOSITORY#*/}" >> $GITHUB_ENV
+      # - name: Create or verify SonarQube Quality Gate
+      #   run: |
+      #     GATE_NAME=$REPO_NAME
+      #     QUALITY_GATE=$(curl -s -u $SONAR_TOKEN: "$SONAR_HOST_URL/api/qualitygates/list?organization=$SONAR_ORGANIZATION" | jq -r --arg gate_name "$GATE_NAME" '.qualitygates[] | select(.name == $gate_name)')
+      #     GATE_ID=$(echo "$QUALITY_GATE" | jq -r '.id')
+      #     echo "::debug::Quality Gate ID: $GATE_ID and info: $QUALITY_GATE"
 
-          EXIST_NAME_GATE=$(echo "$QUALITY_GATE" | jq -r '.name')
-          if [ -z "$EXIST_NAME_GATE" ]; then
-            echo "EXIST_GATE=false" >> $GITHUB_ENV
-            echo "The quality gate '$GATE_NAME' does not exist. Creating..."
+      #     EXIST_NAME_GATE=$(echo "$QUALITY_GATE" | jq -r '.name')
+      #     if [ -z "$EXIST_NAME_GATE" ]; then
+      #       echo "EXIST_GATE=false" >> $GITHUB_ENV
+      #       echo "The quality gate '$GATE_NAME' does not exist. Creating..."
  
-            QUALITY_GATE=$(curl -s -u $SONAR_TOKEN: -X POST \
-              "$SONAR_HOST_URL/api/qualitygates/create" \
-              -d "name=$GATE_NAME" \
-              -d "organization=$SONAR_ORGANIZATION")
-            GATE_ID=$(echo "$QUALITY_GATE" | jq -r '.id')
+      #       QUALITY_GATE=$(curl -s -u $SONAR_TOKEN: -X POST \
+      #         "$SONAR_HOST_URL/api/qualitygates/create" \
+      #         -d "name=$GATE_NAME" \
+      #         -d "organization=$SONAR_ORGANIZATION")
+      #       GATE_ID=$(echo "$QUALITY_GATE" | jq -r '.id')
               
-            echo "::debug::Created Quality Gate ID: $GATE_ID and info: $QUALITY_GATE"
-          else
-            echo "EXIST_GATE=true" >> $GITHUB_ENV
-            echo "The quality gate '$GATE_NAME' already exists. Skipping creation."
-          fi
-          echo "GATE_ID=$GATE_ID" >> $GITHUB_ENV
-          CONDITIONS=$(echo "$QUALITY_GATE" | jq -c '.conditions')
-          echo "CONDITIONS=$CONDITIONS" >> $GITHUB_ENV
+      #       echo "::debug::Created Quality Gate ID: $GATE_ID and info: $QUALITY_GATE"
+      #     else
+      #       echo "EXIST_GATE=true" >> $GITHUB_ENV
+      #       echo "The quality gate '$GATE_NAME' already exists. Skipping creation."
+      #     fi
+      #     echo "GATE_ID=$GATE_ID" >> $GITHUB_ENV
+      #     CONDITIONS=$(echo "$QUALITY_GATE" | jq -c '.conditions')
+      #     echo "CONDITIONS=$CONDITIONS" >> $GITHUB_ENV
 
 
-      - name: Set conditions for the Quality Gate
-        run: |
-            jq -c '.conditions[]' .github/conditions-quality-gate.json | while read condition; do
-              metric=$(echo "$condition" | jq -r '.metric')
-              op=$(echo "$condition" | jq -r '.op')
-              error=$(echo "$condition" | jq -r '.error')
+      # - name: Set conditions for the Quality Gate
+      #   run: |
+      #       jq -c '.conditions[]' .github/conditions-quality-gate.json | while read condition; do
+      #         metric=$(echo "$condition" | jq -r '.metric')
+      #         op=$(echo "$condition" | jq -r '.op')
+      #         error=$(echo "$condition" | jq -r '.error')
 
-              if [ "$EXIST_GATE" = "true" ]; then
-                mapfile -t MY_CONDITION < <(echo "$CONDITIONS" | jq -c --arg metric_condition "$metric" '.[] | select(.metric == $metric_condition)')
-                MY_CONDITION_ID=$(echo "$MY_CONDITION" | jq -r '.id')
+      #         if [ "$EXIST_GATE" = "true" ]; then
+      #           mapfile -t MY_CONDITION < <(echo "$CONDITIONS" | jq -c --arg metric_condition "$metric" '.[] | select(.metric == $metric_condition)')
+      #           MY_CONDITION_ID=$(echo "$MY_CONDITION" | jq -r '.id')
 
-                curl -s -u $SONAR_TOKEN: -X POST \
-                "$SONAR_HOST_URL/api/qualitygates/update_condition" \
-                -d "id=$MY_CONDITION_ID" \
-                -d "organization=$SONAR_ORGANIZATION" \
-                -d "metric=$metric" \
-                -d "op=$op" \
-                -d "error=$error"
+      #           curl -s -u $SONAR_TOKEN: -X POST \
+      #           "$SONAR_HOST_URL/api/qualitygates/update_condition" \
+      #           -d "id=$MY_CONDITION_ID" \
+      #           -d "organization=$SONAR_ORGANIZATION" \
+      #           -d "metric=$metric" \
+      #           -d "op=$op" \
+      #           -d "error=$error"
 
-                echo "Updated condition for existing gate: metric=$metric, op=$op, error=$error"
-              else
-                echo "Creating condition for new gate: metric=$metric, op=$op, error=$error"
-                curl -s -u $SONAR_TOKEN: -X POST \
-                "$SONAR_HOST_URL/api/qualitygates/create_condition" \
-                -d "gateId=$GATE_ID" \
-                -d "organization=$SONAR_ORGANIZATION" \
-                -d "metric=$metric" \
-                -d "op=$op" \
-                -d "error=$error"
-              fi
-            done
+      #           echo "Updated condition for existing gate: metric=$metric, op=$op, error=$error"
+      #         else
+      #           echo "Creating condition for new gate: metric=$metric, op=$op, error=$error"
+      #           curl -s -u $SONAR_TOKEN: -X POST \
+      #           "$SONAR_HOST_URL/api/qualitygates/create_condition" \
+      #           -d "gateId=$GATE_ID" \
+      #           -d "organization=$SONAR_ORGANIZATION" \
+      #           -d "metric=$metric" \
+      #           -d "op=$op" \
+      #           -d "error=$error"
+      #         fi
+      #       done
     
-      # 1. PROVISION: Verificar si existe o crear el proyecto
-      - name: Ensure SonarQube Project Exists
-        run: |
-          PROJECT_NAME="$REPO_NAME"
-          PROJECT_KEY="${REPO_NAME,,}" # Convertir a minúsculas para el key
+      # # 1. PROVISION: Verificar si existe o crear el proyecto
+      # - name: Ensure SonarQube Project Exists
+      #   run: |
+      #     PROJECT_NAME="$REPO_NAME"
+      #     PROJECT_KEY="${REPO_NAME,,}" # Convertir a minúsculas para el key
           
-          echo "Checking if project '$PROJECT_NAME' with key '$PROJECT_KEY' exists in SonarQube..."
-          # Intentamos buscar el proyecto
-          RESPONSE=$(curl -u $SONAR_TOKEN: \
-            "$SONAR_HOST_URL/api/projects/search?organization=$SONAR_ORGANIZATION&projects=$PROJECT_KEY")
+      #     echo "Checking if project '$PROJECT_NAME' with key '$PROJECT_KEY' exists in SonarQube..."
+      #     # Intentamos buscar el proyecto
+      #     RESPONSE=$(curl -u $SONAR_TOKEN: \
+      #       "$SONAR_HOST_URL/api/projects/search?organization=$SONAR_ORGANIZATION&projects=$PROJECT_KEY")
 
-          echo "Response: $RESPONSE"
+      #     echo "Response: $RESPONSE"
 
-          TOTAL_FOUND=$(echo "$RESPONSE" | jq '.paging.total')
+      #     TOTAL_FOUND=$(echo "$RESPONSE" | jq '.paging.total')
 
-          if [ "$TOTAL_FOUND" -eq 0 ]; then
-            echo "El proyecto $PROJECT_KEY no existe. Procediendo a crear..."
-            curl -u $SONAR_TOKEN: -X POST \
-              "$SONAR_HOST_URL/api/projects/create" \
+      #     if [ "$TOTAL_FOUND" -eq 0 ]; then
+      #       echo "El proyecto $PROJECT_KEY no existe. Procediendo a crear..."
+      #       curl -u $SONAR_TOKEN: -X POST \
+      #         "$SONAR_HOST_URL/api/projects/create" \
+      #         -d "organization=$SONAR_ORGANIZATION" \
+      #         -d "name=$PROJECT_NAME" \
+      #         -d "project=$PROJECT_KEY"
+      #     else
+      #       echo "Proyecto encontrado. Saltando creación. "
+      #     fi
+
+      #     curl -s -u $SONAR_TOKEN: -X POST \
+      #       "$SONAR_HOST_URL/api/qualitygates/select" \
+      #       -d "organization=$SONAR_ORGANIZATION" \
+      #       -d "gateId=$GATE_ID" \
+      #       -d "projectKey=$PROJECT_KEY" \
+
+      - name: create group
+        run: |
+            echo "Creating group in SonarQube..."
+            curl -s -u $SONAR_TOKEN: -X POST \
+              "$SONAR_HOST_URL/api/user_groups/create" \
               -d "organization=$SONAR_ORGANIZATION" \
-              -d "name=$PROJECT_NAME" \
-              -d "project=$PROJECT_KEY"
-          else
-            echo "Proyecto encontrado. Saltando creación. "
-          fi
-
-          curl -s -u $SONAR_TOKEN: -X POST \
-            "$SONAR_HOST_URL/api/qualitygates/select" \
-            -d "organization=$SONAR_ORGANIZATION" \
-            -d "gateId=$GATE_ID" \
-            -d "projectKey=$PROJECT_KEY" \
-
+              -d "name=$REPO_NAME"
       - name: debug
         run: |
             echo "REPO_NAME: $REPO_NAME"
+
     #   # 2. ANALYSIS: Ejecutar el scanner
     #   - name: SonarQube Scan
     #     uses: sonarsource/sonarqube-scan-action@master
