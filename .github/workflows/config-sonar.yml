@@ -114,10 +114,12 @@ jobs:
       - name: create group
         run: |
             echo "Creating group in SonarQube..."
-            curl -s -u $SONAR_TOKEN: -X POST \
+            response=$(curl -s -u $SONAR_TOKEN: -X POST \
               "$SONAR_HOST_URL/api/user_groups/create" \
               -d "organization=$SONAR_ORGANIZATION" \
-              -d "name=$REPO_NAME"
+              -d "name=$REPO_NAME" \
+            )
+            echo "Response: $response"
       - name: debug
         run: |
             echo "REPO_NAME: $REPO_NAME"
